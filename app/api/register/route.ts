@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     return NextResponse.json(
-      { message: 'Email already registered' },
+      { message: '邮箱已被注册' },
       { status: 400 }
     );
   }
@@ -25,13 +25,13 @@ export async function POST(req: Request) {
       email,
       password: hashedPassword,
       name,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`, // 默认头像
+      avatar: '/uploads/2.jpg', // 默认头像
     },
   });
 
   return NextResponse.json(
     {
-      message: 'User registered successfully',
+      message: '用户注册成功',
       user: {
         id: user.id,
         email: user.email,

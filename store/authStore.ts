@@ -1,23 +1,55 @@
 import { create } from 'zustand';
+import Cookies from 'js-cookie';
+
+type User = {
+  id: number;
+  email: string;
+  name: string;
+  avatar: string;
+  pwd: string;
+};
 
 type AuthState = {
-  user: { id: number; email: string; name: string; avatar: string } | null;
+  user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: { id: number; email: string; name: string; avatar: string }, token: string) => void;
+  login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (updatedUser: Partial<User>) => void;
+};
+
+const cookieOptions = {
+  expires: new Date(Date.now() +  60 * 60 * 1000), 
+  secure: true,
+  sameSite: 'strict' as const,
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  user: JSON.parse(Cookies.get('user') || 'null'),
+  token: Cookies.get('token') || null,
+  isAuthenticated: !!Cookies.get('token'),
+
   login: (user, token) => {
-    localStorage.setItem('token', token); // 存储 token 到 localStorage
+    Cookies.set('token', token, cookieOptions);
+    Cookies.set('user', JSON.stringify(user), cookieOptions);
     set({ user, token, isAuthenticated: true });
   },
+
   logout: () => {
-    localStorage.removeItem('token'); // 清除 localStorage 中的 token
+    Cookies.remove('token');
+    Cookies.remove('user');
     set({ user: null, token: null, isAuthenticated: false });
+  },
+
+  updateUser: (updatedUser) => {
+    set((state) => {
+      if (!state.user) return state;
+
+      // 合并原用户信息和更新的数据
+      const newUser = { ...state.user, ...updatedUser };
+      // 更新 cookies
+      Cookies.set('user', JSON.stringify(newUser), cookieOptions);
+      return { user: newUser };
+    });
   },
 }));

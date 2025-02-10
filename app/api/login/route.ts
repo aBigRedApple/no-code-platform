@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     return NextResponse.json(
-      { message: 'Invalid email or password' },
+      { message: '邮箱或密码无效' },
       { status: 400 }
     );
   }
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const isValidPassword = bcrypt.compareSync(password, user.password);
   if (!isValidPassword) {
     return NextResponse.json(
-      { message: 'Invalid email or password' },
+      { message: '邮箱或密码无效' },
       { status: 400 }
     );
   }
@@ -34,13 +34,14 @@ export async function POST(req: Request) {
   // 返回用户信息和 token
   return NextResponse.json(
     {
-      message: 'Login successful',
+      message: '登录成功',
       token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        avatar: user.avatar, // 返回头像字段
+        avatar: user.avatar,
+        pwd: user.password,
       },
     },
     { status: 200 }
